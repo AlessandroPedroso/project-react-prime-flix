@@ -1,7 +1,51 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import api from "../../services/api";
+
 export default function Filme() {
+  const { id } = useParams(); //nome do id que está em routes
+  const [filme, setFilme] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadFilme() {
+      await api
+        .get(`/movie/${id}`)
+        .then((response) => {
+          console.log(response.data);
+          setFilme(response.data);
+          setLoading(false);
+        })
+        .catch(() => {
+          console.log("FILME NÃO ENCONTRADO");
+        });
+    }
+
+    loadFilme();
+
+    return () => {
+      console.log("COMPONENTE FOI DESMONTADO");
+    };
+  }, []);
+
+  if (loading) {
     return (
-        <div>
-            <h1>BEM VINDO A PAGINA DE FILME</h1>
-        </div>
-    )
+      <div className="filme-info">
+        <h1>Carregando detalhes....</h1>
+      </div>
+    );
+  }
+  return (
+    <div className="filme-info">
+      <h1>{filme.title}</h1>
+      <img
+        src={`https://image.tmdb.org/t/p/original/${filme.backdrop_path}`}
+        alt={filme.original_title}
+      />
+      <h3>Sinopse</h3>
+      <span>{filme.overview}</span>
+
+      <strong>Avaliação: {filme.vote_average} / 10 </strong>
+    </div>
+  );
 }
